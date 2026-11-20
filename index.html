@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажер: Фоны и Циклы в Scratch 3</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100%;}
+  body{
+    font-family:'Segoe UI',Tahoma,Verdana,Arial,sans-serif;
+    background:linear-gradient(135deg,#4a3ac4 0%,#7c4dff 45%,#4c97ff 100%);
+    background-attachment:fixed;
+    min-height:100vh;padding:16px 16px 40px;
+    display:flex;justify-content:center;align-items:flex-start;
+    color:#2c2c3a;
+    user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;
+    -webkit-touch-callout:none;
+  }
+  .app{width:100%;max-width:1080px;margin:0 auto;}
+  .screen{display:none;animation:fade .3s ease;}
+  .screen.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .card{
+    background:#fff;border-radius:26px;padding:26px 30px 30px;
+    box-shadow:0 18px 45px rgba(30,20,80,.35);
+  }
+
+  /* ---------- ЭКРАН 1 ---------- */
+  .start-card{max-width:720px;margin:30px auto 0;text-align:center;}
+  .logo-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .logo-row .blk{font-size:15px;padding:8px 14px;}
+  h1{font-size:29px;line-height:1.25;color:#5b3fd6;margin-bottom:8px;}
+  .sub{font-size:16px;color:#8a86a8;margin-bottom:26px;font-weight:600;}
+  .label-name{display:block;font-size:19px;font-weight:800;color:#3a3a55;margin-bottom:10px;}
+  #nameInput{
+    width:100%;max-width:420px;margin:0 auto 22px;display:block;
+    font-size:22px;font-weight:700;padding:13px 18px;border-radius:16px;
+    border:3px solid #28a745;
+    box-shadow:0 0 12px rgba(40,167,69,.4);
+    outline:none;text-align:center;color:#2c2c3a;background:#f7fff9;
+    transition:.2s;
+  }
+  #nameInput:focus{box-shadow:0 0 18px rgba(40,167,69,.65);}
+  .warn{font-size:14px;color:#a0a0b8;margin-top:12px;font-weight:600;min-height:18px;}
+
+  /* ---------- КНОПКИ ---------- */
+  .btn{
+    font-family:inherit;font-size:20px;font-weight:800;color:#fff;
+    border:none;border-radius:16px;padding:14px 34px;cursor:pointer;
+    transition:.15s;letter-spacing:.3px;
+  }
+  .btn:active{transform:translateY(2px);}
+  .btn-green{background:linear-gradient(180deg,#34c759,#22a34a);box-shadow:0 5px 0 #1a7d38;}
+  .btn-green:disabled{background:#cfd4dd;box-shadow:0 5px 0 #b5bac4;cursor:not-allowed;color:#8d94a3;}
+  .btn-blue{background:linear-gradient(180deg,#5aa9ff,#3d7fe0);box-shadow:0 5px 0 #2a5fae;}
+  .btn-purple{background:linear-gradient(180deg,#9d7bff,#7c4dff);box-shadow:0 5px 0 #5b34c4;}
+  .btn-hint{
+    background:linear-gradient(180deg,#ffd24d,#f5b400);color:#5a4000;
+    box-shadow:0 5px 0 #c99300;font-size:17px;padding:11px 22px;
+  }
+  .btn-hint:disabled{opacity:.55;cursor:not-allowed;}
+
+  /* ---------- ЭКРАН 2 ---------- */
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px;}
+  .who{font-size:18px;font-weight:800;color:#5b3fd6;background:#f1ecff;padding:8px 16px;border-radius:14px;}
+  .tasknum{font-size:17px;font-weight:800;color:#3a3a55;}
+  .tasknum b{color:#7c4dff;font-size:21px;}
+  .bar{height:18px;background:#ececf6;border-radius:12px;overflow:hidden;margin-bottom:22px;box-shadow:inset 0 2px 4px rgba(0,0,0,.08);}
+  .bar > i{display:block;height:100%;width:0;border-radius:12px;background:linear-gradient(90deg,#28a745,#7c4dff);transition:width .35s ease;}
+
+  .q-text{font-size:21px;font-weight:800;line-height:1.4;margin-bottom:18px;color:#252540;}
+
+  .opts{display:flex;flex-direction:column;gap:12px;}
+  .opt{
+    display:flex;align-items:center;gap:12px;
+    width:100%;text-align:left;font-family:inherit;font-size:19px;font-weight:600;
+    padding:15px 20px;border-radius:16px;border:3px solid #dcdcf0;background:#fff;
+    color:#2c2c3a;cursor:pointer;transition:.14s;
+  }
+  .opt:hover:not(:disabled){border-color:#7c4dff;background:#faf7ff;transform:translateX(4px);}
+  .opt.sel{border-color:#7c4dff;background:#f0e9ff;box-shadow:0 0 0 4px rgba(124,77,255,.18);}
+  .opt.correct{border-color:#28a745;background:#e9f9ee;}
+  .opt.wrong{border-color:#e74c3c;background:#fdecea;}
+  .opt:disabled{cursor:default;}
+  .opts.tf{flex-direction:row;}
+  .opts.tf .opt{justify-content:center;font-size:21px;font-weight:800;}
+
+  /* ---------- Scratch-блоки ---------- */
+  .blk{
+    display:inline-block;padding:7px 15px;border-radius:8px;
+    color:#fff;font-weight:800;font-size:17px;line-height:1.25;
+    box-shadow:0 3px 0 rgba(0,0,0,.22);
+    white-space:normal;
+  }
+  .blk-events{background:#ffbf00;color:#4a3400;box-shadow:0 3px 0 #c08f00;}
+  .blk-control{background:#ffab19;color:#4a2a00;box-shadow:0 3px 0 #c47c00;}
+  .blk-looks{background:#9966ff;color:#fff;box-shadow:0 3px 0 #6f3fd6;}
+
+  /* ---------- Drag & Drop ---------- */
+  .pool{
+    display:flex;flex-wrap:wrap;gap:10px;min-height:66px;padding:12px;
+    border-radius:16px;background:#f5f3ff;border:2px dashed #cbc3f5;margin-bottom:18px;
+  }
+  .chip{
+    padding:10px 16px;border-radius:12px;background:#fff;border:3px solid #b9b9d4;
+    font-size:17px;font-weight:700;cursor:grab;transition:.14s;color:#2c2c3a;
+  }
+  .chip:hover{border-color:#7c4dff;transform:translateY(-2px);}
+  .chip.sel{border-color:#7c4dff;background:#efe9ff;box-shadow:0 0 0 4px rgba(124,77,255,.2);}
+  .chip.wrong{border-color:#e74c3c;background:#fdecea;}
+  .chip.dragging{opacity:.4;}
+  .zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;}
+  .zone{
+    border:3px dashed var(--zc,#b9b9d4);border-radius:16px;padding:10px;
+    min-height:130px;background:#fafaff;
+  }
+  .zone-title{
+    font-weight:900;font-size:17px;margin-bottom:8px;text-align:center;
+    color:var(--zc,#5b3fd6);
+  }
+  .zone-body{display:flex;flex-wrap:wrap;gap:8px;min-height:70px;align-content:flex-start;}
+
+  /* ---------- Соответствие ---------- */
+  .match{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .mcol{display:flex;flex-direction:column;gap:12px;}
+  .mitem{
+    display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;
+    border:3px solid #eaeaf6;background:#fafaff;cursor:pointer;transition:.14s;
+  }
+  .mitem:hover{border-color:#c9c2f0;}
+  .mitem.sel{border-color:#7c4dff;background:#efe9ff;box-shadow:0 0 0 4px rgba(124,77,255,.15);}
+  .mitem.linked{background:#eaf7ff;border-color:#9dd2ff;}
+  .mitem .plain{font-size:17px;font-weight:700;color:#2c2c3a;}
+  .badge{
+    width:32px;height:32px;border-radius:50%;background:#7c4dff;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:900;
+    flex:0 0 auto;font-size:16px;
+  }
+  .badge.empty{background:#d9d9e8;color:#9a9ab8;}
+
+  /* ---------- Порядок ---------- */
+  .script-area{
+    min-height:130px;border-radius:16px;background:#f5f3ff;border:2px dashed #cbc3f5;
+    padding:14px;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;
+  }
+  .script-empty{color:#a29cc4;font-size:16px;text-align:center;padding:26px 10px;font-weight:600;}
+  .order-pool{flex-direction:column;align-items:flex-start;}
+  .order-pool .blk{cursor:pointer;transition:.14s;}
+  .order-pool .blk:hover{transform:translateX(4px);}
+  .script-area .blk{cursor:pointer;}
+
+  /* ---------- Обратная связь ---------- */
+  .hintrow{margin-top:18px;}
+  .hint-box{
+    margin-top:12px;padding:14px 18px;border-radius:14px;font-size:17px;font-weight:600;
+    background:#fff8e1;border:3px solid #ffd24d;color:#6b4d00;line-height:1.4;
+  }
+  .feedback{margin-top:18px;padding:16px 20px;border-radius:16px;font-size:18px;line-height:1.4;}
+  .feedback.good{background:#e9f9ee;border:3px solid #28a745;}
+  .feedback.bad{background:#fdecea;border:3px solid #e74c3c;}
+  .fb-title{font-weight:900;font-size:20px;margin-bottom:6px;}
+  .feedback.good .fb-title{color:#1e7a37;}
+  .feedback.bad .fb-title{color:#b52d1e;}
+  .fb-text{font-weight:600;color:#3a3a55;}
+
+  .actions{margin-top:22px;display:flex;justify-content:center;gap:14px;}
+
+  /* ---------- ЭКРАН 3 ---------- */
+  .finish-head{text-align:center;margin-bottom:22px;}
+  .finish-head h1{font-size:28px;}
+  .finish-sub{font-size:17px;color:#7d7a99;font-weight:600;margin-top:6px;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:22px 0 26px;}
+  .stat{
+    border-radius:18px;padding:18px 12px;text-align:center;background:#f6f5ff;border:3px solid #e5e2ff;
+  }
+  .stat b{display:block;font-size:34px;line-height:1.1;}
+  .stat span{font-size:15px;font-weight:800;color:#7d7a99;}
+  .stat.good b{color:#28a745;} .stat.bad b{color:#e74c3c;} .stat.total b{color:#7c4dff;}
+  h3{font-size:20px;color:#5b3fd6;margin-bottom:14px;}
+  .mistake{
+    border:3px solid #ffd8d3;background:#fff8f7;border-radius:16px;padding:14px 18px;margin-bottom:12px;
+  }
+  .m-num{font-weight:900;color:#e74c3c;font-size:16px;margin-bottom:4px;}
+  .m-q{font-size:17px;font-weight:700;color:#2c2c3a;margin-bottom:8px;line-height:1.35;}
+  .m-row{font-size:16px;font-weight:600;color:#3a3a55;margin-bottom:4px;line-height:1.4;}
+  .lbl{font-weight:900;}
+  .lbl.bad{color:#e74c3c;} .lbl.good{color:#28a745;}
+  .m-exp{color:#5b3fd6;margin-top:6px;}
+  .all-good{
+    text-align:center;font-size:19px;font-weight:800;color:#1e7a37;
+    background:#e9f9ee;border:3px solid #28a745;border-radius:18px;padding:22px;
+  }
+  .hidden{display:none !important;}
+
+  @media (max-width:620px){
+    h1{font-size:22px;}
+    .q-text{font-size:18px;}
+    .opt{font-size:17px;}
+    .match{grid-template-columns:1fr;}
+    .card{padding:18px;}
+  }
+
+body{font-family:"Segoe UI",Verdana,Arial,sans-serif;font-size:22px;color:#1f2a44;background-color:#fbfaf2;background-image:linear-gradient(#cde3f5 1.5px,transparent 1.5px),linear-gradient(90deg,#cde3f5 1.5px,transparent 1.5px);background-size:30px 30px;background-attachment:fixed}
+.app{max-width:1200px}
+.card{border-radius:14px;border:3px solid #2b5aa8;box-shadow:0 8px 0 rgba(43,90,168,.25);position:relative;padding:30px 36px 34px 60px}
+.card:before{content:"";position:absolute;left:34px;top:0;bottom:0;width:3px;background:#f0a0a0}
+h1{font-size:38px;color:#1f4fa3}.sub{font-size:21px;color:#5c6b8a}
+.label-name{font-size:26px}#nameInput{font-size:28px;border-color:#2b5aa8;box-shadow:none;background:#fff}
+.logo-row{background:#2f6b4f;border:8px solid #b07a3c;border-radius:12px;padding:22px 30px;align-items:center}
+.logo-scr{text-align:left}.logo-row .cat{width:110px;height:110px}
+.btn{font-size:26px;padding:16px 42px;border-radius:14px}
+.btn-hint{font-size:21px;padding:12px 24px}
+.who{font-size:22px;background:#e6efff;color:#1f4fa3}.tasknum{font-size:22px}.tasknum b{font-size:28px;color:#1f4fa3}
+.bar{height:20px}.bar>i{background:linear-gradient(90deg,#4cbf56,#4c97ff)}
+.q-text{font-size:29px;line-height:1.35;margin-bottom:20px}
+.opt{font-size:24px;min-height:68px;border-color:#c9d6ee;border-radius:14px}
+.opt:hover:not(:disabled){border-color:#4c97ff;background:#f1f7ff}.opt.sel{border-color:#2b5aa8;background:#e6efff;box-shadow:0 0 0 4px rgba(76,151,255,.25)}
+.opts.tf .opt{font-size:26px}.opt .b{pointer-events:none}.opt svg.ic{flex:0 0 auto}
+.chip{font-size:24px;padding:12px 18px;display:inline-flex;align-items:center;gap:10px}
+.zone-title{font-size:22px}.mitem .plain{font-size:23px}.mitem{padding:12px}
+.hint-box,.feedback{font-size:22px}.fb-title{font-size:24px}
+.mistake .m-q{font-size:21px}.m-row{font-size:20px}.m-num{font-size:19px}.stat span{font-size:19px}.finish-sub{font-size:22px}
+.art{display:flex;justify-content:center;align-items:center;gap:16px;margin:0 0 18px;flex-wrap:wrap}
+.stg{width:300px;max-width:100%;border:4px solid #4c97ff;border-radius:10px;background:#fff}
+.tb{display:flex;flex-direction:column;gap:8px}.tb svg{width:38px;height:38px}
+.th{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}.th b{font-size:30px;color:#4c97ff}
+.t{border:4px solid #c9d6ee;border-radius:10px;padding:4px;background:#fff;text-align:center;font-weight:800}.t svg{width:150px;display:block}.t.hi{border-color:#4cbf56}
+.tiles{display:flex;gap:14px}.tile{border:4px solid #c9d6ee;border-radius:10px;padding:6px;text-align:center;font-weight:800;background:#fff}.tile svg{width:90px;display:block}.tile.on{border-color:#4c97ff;background:#e6efff}
+.pill{display:inline-block;color:#fff;font-weight:800;border-radius:8px;padding:5px 12px;font-size:21px;text-shadow:0 1px 1px rgba(0,0,0,.35)}.pill svg{vertical-align:middle;width:24px;height:24px}.plus{margin:0 8px;color:#5c6b8a}
+.note{background:#eef6ff;border:3px dashed #4c97ff;border-radius:12px;padding:10px 16px;font-size:20px;font-weight:700;margin-bottom:14px}
+/* Scratch 3 блоки */
+.b{position:relative;display:block;width:max-content;margin-top:-6px;filter:drop-shadow(0 0 1px var(--d)) drop-shadow(0 0 1px var(--d));touch-action:none;cursor:grab;user-select:none}
+.b:first-child{margin-top:0}
+.bb{background:var(--c);color:#fff;font:700 23px/1.2 "Helvetica Neue",Helvetica,Arial,sans-serif;padding:12px 18px 18px;display:flex;align-items:center;gap:9px;white-space:nowrap;text-shadow:0 1px 1px rgba(0,0,0,.3);clip-path:polygon(0 0,16px 0,22px 6px,38px 6px,44px 0,100% 0,100% calc(100% - 6px),44px calc(100% - 6px),38px 100%,22px 100%,16px calc(100% - 6px),0 calc(100% - 6px))}
+.hat>.bb{border-radius:44px 44px 0 0/26px 26px 0 0;padding-top:28px;clip-path:polygon(0 0,100% 0,100% calc(100% - 6px),44px calc(100% - 6px),38px 100%,22px 100%,16px calc(100% - 6px),0 calc(100% - 6px))}
+.b.c>.ct{clip-path:polygon(0 0,16px 0,22px 6px,38px 6px,44px 0,100% 0,100% calc(100% - 6px),60px calc(100% - 6px),54px 100%,38px 100%,32px calc(100% - 6px),0 calc(100% - 6px))}
+.b.c>.cm{border-left:18px solid var(--c);min-height:34px;margin-top:-6px}
+.cm>.b:first-child{margin-top:-6px}
+.b.c>.cb{height:30px;padding:0;margin-top:-6px;border-radius:0 0 10px 10px;clip-path:polygon(0 0,34px 0,40px 6px,56px 6px,62px 0,100% 0,100% 100%,0 100%)}
+.in{display:inline-block;min-width:36px;text-align:center;background:#fff;color:#444;border-radius:16px;padding:1px 10px;font-style:normal;font-size:21px;text-shadow:none}
+.in.dd{border-radius:6px;background:#fff;color:#444;box-shadow:inset 0 0 0 2px rgba(0,0,0,.18)}
+.fl svg{width:28px;height:28px;display:block}.fl{display:inline-flex}
+/* редактор скриптов */
+.ed{display:flex;gap:0;border:3px solid #c9d6ee;border-radius:12px;overflow:hidden;background:#fff;margin-bottom:12px}
+.cats{width:96px;background:#fff;border-right:2px solid #d9e3f2;padding:10px 4px;display:flex;flex-direction:column;gap:14px}
+.cats div{display:flex;flex-direction:column;align-items:center;font-size:14px;font-weight:700;color:#575e75;text-align:center;line-height:1.1}
+.cats i{width:34px;height:34px;border-radius:50%;margin-bottom:3px;border:2px solid rgba(0,0,0,.15)}
+.pal{width:340px;background:#f9f9f9;border-right:2px solid #d9e3f2;padding:18px 16px;display:flex;flex-direction:column;gap:22px;min-height:440px}
+.pal.over{background:#ffe9e9}.pe{color:#7a8aa8;font-weight:700;font-size:19px;text-align:center;margin-top:30px}
+.ws{position:relative;flex:1;min-height:440px;background:#f9f9f9;background-image:radial-gradient(#d9d9e6 1.5px,transparent 1.5px);background-size:24px 24px;overflow:hidden}
+.ws .scr{position:absolute}.wsbar{position:absolute;right:10px;top:10px;display:flex;gap:8px}.wsbar svg{width:34px;height:34px}
+.script-empty{position:absolute;left:0;right:0;top:44%;text-align:center;color:#9aa6c0;font-weight:700;font-size:20px;padding:0 20px}.ws.has .script-empty{display:none}
+.drag{position:fixed;z-index:999;pointer-events:none;opacity:.95;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3))}
+.snapv{position:fixed;z-index:998;width:150px;height:10px;border-radius:5px;background:rgba(120,120,140,.55);display:none;pointer-events:none}
+@media (max-width:900px){.ed{flex-direction:column}.cats{display:none}.pal{width:auto;flex-direction:row;flex-wrap:wrap;min-height:0}}
+
+html{-webkit-text-size-adjust:100%}
+.stat.try b{color:#f08c00}#tryLog{text-align:center;font-weight:800;color:#1f4fa3;font-size:21px;margin:-8px 0 22px}
+@media (max-width:700px){
+body{padding:8px 8px 30px;font-size:18px}
+.card{padding:16px 14px 22px 28px;border-width:2px}.card:before{left:15px}
+h1,.finish-head h1{font-size:25px}.sub{font-size:17px}.label-name{font-size:21px}#nameInput{font-size:23px}
+.logo-row{padding:12px;gap:8px;flex-direction:column}.logo-row .cat{width:70px;height:70px}
+.btn{font-size:22px;padding:14px 20px}.actions{flex-direction:column}.actions .btn{width:100%}
+.q-text{font-size:21px}.opt{font-size:19px;min-height:56px;padding:12px 14px;flex-wrap:wrap}.opts.tf .opt{font-size:21px}
+.chip{font-size:19px;padding:10px 12px}.who,.tasknum{font-size:17px}.tasknum b{font-size:22px}
+.zones{grid-template-columns:1fr}.zone-title{font-size:19px}.mitem .plain{font-size:18px}
+.b{max-width:100%}.bb{font-size:18px;padding:9px 13px 15px;white-space:normal}.hat>.bb{padding-top:22px}
+.in{font-size:16px;min-width:28px}.fl svg{width:22px;height:22px}.b.c>.cm{min-height:28px}
+.pill{font-size:16px;padding:4px 9px}.plus{margin:0 4px}
+.stg{width:100%}.t svg{width:96px}.tile svg{width:64px}.th b{font-size:22px}
+.note{font-size:16px}.hint-box,.feedback{font-size:18px}.fb-title{font-size:20px}
+.ws{min-height:340px}.pal{padding:12px;gap:14px;flex-direction:row;flex-wrap:wrap;align-items:flex-start;min-height:0}
+.stats{grid-template-columns:1fr 1fr;gap:10px}.stat b{font-size:28px}.stat span{font-size:16px}
+.m-q{font-size:17px}.m-row{font-size:16px}#tryLog{font-size:17px}
+}
+</style>
+</head>
+<body oncontextmenu="return false;">
+
+<div class="app">
+
+  <!-- ============ ЭКРАН 1 ============ -->
+  <section id="screen-start" class="screen active">
+    <div class="card start-card">
+      <div class="logo-row">
+        <span class="blk blk-events">когда флажок нажат</span>
+        <span class="blk blk-control">повторять всегда</span>
+        <span class="blk blk-looks">следующий фон</span>
+      </div>
+      <h1>Интерактивный тренажер:<br>Фоны и Циклы в Scratch 3</h1>
+      <p class="sub">Цифровая грамотность · 3 класс · Урок 11</p>
+      <label class="label-name" for="nameInput">Введи своё имя</label>
+      <input id="nameInput" type="text" maxlength="20" autocomplete="off" spellcheck="false">
+      <div>
+        <button id="startBtn" class="btn btn-green" disabled>Начать тренажер</button>
+      </div>
+      <p class="warn" id="startWarn">Введи имя (минимум 2 буквы), чтобы начать</p>
+    </div>
+  </section>
+
+  <!-- ============ ЭКРАН 2 ============ -->
+  <section id="screen-quiz" class="screen">
+    <div class="card">
+      <div class="topbar">
+        <div class="who">👦 <span id="studentName"></span></div>
+        <div class="tasknum">Задание <b id="qNum">1</b> из <span id="qTotal">20</span></div>
+      </div>
+      <div class="bar"><i id="barFill"></i></div>
+
+      <div id="questionArea"></div>
+
+      <div id="feedback" class="feedback hidden"></div>
+
+      <div class="actions">
+        <button id="checkBtn" class="btn btn-blue">Проверить</button>
+        <button id="nextBtn" class="btn btn-green hidden">Далее →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ЭКРАН 3 ============ -->
+  <section id="screen-finish" class="screen">
+    <div class="card">
+      <div class="finish-head">
+        <h1 id="finishTitle"></h1>
+        <p class="finish-sub" id="finishSub"></p>
+      </div>
+
+      <div class="stats">
+        <div class="stat good"><b id="statCorrect">0</b><span>верных ответов</span></div>
+        <div class="stat bad"><b id="statWrong">0</b><span>ошибок</span></div>
+        <div class="stat total"><b id="statScore">0 из 20</b><span>результат</span></div>
+        <div class="stat try"><b id="statTry">1</b><span>попыток</span></div>
+      </div>
+
+      <div id="tryLog"></div>
+      <div id="mistakesBox"></div>
+
+      <div class="actions">
+        <button id="restartBtn" class="btn btn-purple">Пройти заново 🔄</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   ЗАЩИТА ОТ СПИСЫВАНИЯ
+   ========================================================= */
+(function(){
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; });
+  document.addEventListener('keydown', function(e){
+    var k = (e.key || '').toLowerCase();
+    var ctrl = e.ctrlKey || e.metaKey;
+    if (ctrl && (k === 'c' || k === 'a' || k === 'p' || k === 's' || k === 'u' || k === 'x')) {
+      e.preventDefault(); e.stopPropagation(); return false;
+    }
+    if (k === 'f12' || e.keyCode === 123) { e.preventDefault(); return false; }
+    if (k === 'printscreen' || e.keyCode === 44) { e.preventDefault(); return false; }
+  }, true);
+  document.addEventListener('keyup', function(e){
+    var k = (e.key || '').toLowerCase();
+    if (k === 'printscreen' || e.keyCode === 44) { e.preventDefault(); return false; }
+  }, true);
+  document.addEventListener('dragstart', function(e){
+    if (!e.target.closest || !e.target.closest('.chip')) e.preventDefault();
+  });
+})();
+
+/* =========================================================
+   ВСПОМОГАТЕЛЬНОЕ
+   ========================================================= */
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
+function shuffle(arr){
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+/* =========================================================
+   ДАННЫЕ: 20 ЗАДАНИЙ
+   ========================================================= */
+const QUESTIONS = [
+
+/* ---------- УРОВЕНЬ: ЗНАНИЕ И ПОНИМАНИЕ (1–7) ---------- */
+
+{
+  type:'mc',
+  q:'Какая кнопка в правом нижнем углу экрана Scratch используется для добавления нового фона на Сцену?',
+  hint:'Посмотри в правый нижний угол Сцены: там есть кнопка со значком картинки-пейзажа.',
+  explain:'В правом нижнем углу Сцены находится кнопка «Выбрать фон» со значком картинки (пейзажа). Она открывает библиотеку фонов.',
+  options:[
+    {t:'Кнопка со значком картинки (пейзажа)', ok:true},
+    {t:'Красная кнопка «Стоп»', ok:false},
+    {t:'Зелёный флажок', ok:false},
+    {t:'Кнопка с кисточкой', ok:false}
+  ]
+},
+{
+  type:'mc',
+  q:'В какой части экрана Scratch располагается фон?',
+  hint:'Фон — это «декорация» Сцены.',
+  explain:'Фон находится на Сцене — позади всех персонажей (спрайтов).',
+  options:[
+    {t:'На Сцене, за персонажами', ok:true},
+    {t:'В палитре блоков слева', ok:false},
+    {t:'В библиотеке спрайтов', ok:false},
+    {t:'В редакторе звуков', ok:false}
+  ]
+},
+{
+  type:'tf',
+  q:'На Сцене можно добавить сразу несколько фонов.',
+  correct:true,
+  hint:'Вспомни вкладку «Фоны» у Сцены: там хранятся картинки-декорации.',
+  explain:'Верно! У Сцены может быть много фонов, но показывается всегда только один из них.'
+},
+{
+  type:'mc',
+  q:'Где пишется код (скрипт) для смены фонов?',
+  hint:'Скрипт, который меняет фон, должен принадлежать самой Сцене, а не Котёнку.',
+  explain:'Код для смены фонов пишется в скрипте Сцены: нужно выбрать Сцену и открыть вкладку «Код».',
+  options:[
+    {t:'В скрипте Сцены (выбрав Сцену)', ok:true},
+    {t:'В скрипте спрайта «Котёнок»', ok:false},
+    {t:'В редакторе звуков', ok:false},
+    {t:'В меню «Файл»', ok:false}
+  ]
+},
+{
+  type:'tf',
+  q:'Фон в Scratch может бегать и прыгать по экрану, как Котёнок.',
+  correct:false,
+  hint:'Подумай: фон — это декорация. Кто в Scratch умеет двигаться?',
+  explain:'Неверно. Фон неподвижен — бегают, прыгают и двигаются только спрайты (персонажи).'
+},
+{
+  type:'mc',
+  q:'Какой цвет имеют блоки категории «Внешний вид», которые управляют фонами?',
+  hint:'Этот цвет стоит рядом с блоками «следующий фон» и «переключить фон на...».',
+  explain:'Блоки категории «Внешний вид» — фиолетовые. Именно там живут блоки смены фона.',
+  options:[
+    {t:'Фиолетовый', ok:true},
+    {t:'Жёлтый', ok:false},
+    {t:'Оранжевый', ok:false},
+    {t:'Голубой', ok:false}
+  ]
+},
+{
+  type:'dd',
+  q:'Разложи слова по категориям: что из этого — спрайт, а что — фон?',
+  hint:'Спрайты — персонажи и предметы, которые двигаются. Фон — декорация Сцены.',
+  explain:'Котёнок, Собака и Мяч — это спрайты (персонажи). Космос, Лес и Подводный мир — это фоны Сцены.',
+  zones:[
+    {name:'Спрайт', color:'#4c97ff'},
+    {name:'Фон', color:'#9966ff'}
+  ],
+  items:[
+    {t:'Котёнок', z:0},
+    {t:'Собака', z:0},
+    {t:'Мяч', z:0},
+    {t:'Космос', z:1},
+    {t:'Лес', z:1},
+    {t:'Подводный мир', z:1}
+  ]
+},
+
+/* ---------- УРОВЕНЬ: ПРИМЕНЕНИЕ (8–14) ---------- */
+
+{
+  type:'mc',
+  q:'Какой блок мгновенно меняет текущий фон на следующий в списке фонов?',
+  hint:'В названии этого блока есть слово «следующий».',
+  explain:'Блок «следующий фон» переключает Сцену на следующую картинку из списка фонов.',
+  options:[
+    {t:'следующий фон', blk:'looks', ok:true},
+    {t:'переключить фон на [Arctic]', blk:'looks', ok:false},
+    {t:'показаться', blk:'looks', ok:false},
+    {t:'ждать 1 секунд', blk:'control', ok:false}
+  ]
+},
+{
+  type:'mc',
+  q:'Какой блок нужен, чтобы переключить Сцену на конкретный фон «Arctic»?',
+  hint:'Здесь нужен блок, где можно выбрать имя фона в окошке.',
+  explain:'Блок «переключить фон на [Arctic]» переключает Сцену сразу на выбранный фон по его названию.',
+  options:[
+    {t:'переключить фон на [Arctic]', blk:'looks', ok:true},
+    {t:'следующий фон', blk:'looks', ok:false},
+    {t:'повторять всегда', blk:'control', ok:false},
+    {t:'когда клавиша [пробел] нажата', blk:'events', ok:false}
+  ]
+},
+{
+  type:'mc',
+  q:'Зачем в алгоритм смены фонов добавляют блок «ждать 1 секунд»?',
+  hint:'Представь, что фоны меняются 30 раз в секунду. Что увидят твои глаза?',
+  explain:'Блок «ждать 1 секунд» делает паузу: фоны меняются плавно, и глаза не устают от мелькания.',
+  options:[
+    {t:'Чтобы фоны менялись плавно и глаза не уставали', ok:true},
+    {t:'Чтобы программа работала быстрее', ok:false},
+    {t:'Чтобы фон стал ярче', ok:false},
+    {t:'Чтобы остановить программу навсегда', ok:false}
+  ]
+},
+{
+  type:'match',
+  q:'Соедини блок Scratch с его ролью в программе. Сначала нажми блок слева, потом его описание справа.',
+  hint:'Жёлтый блок — запуск, оранжевый — цикл, фиолетовый — смена картинки.',
+  explain:'«Когда флажок нажат» запускает программу, «повторять всегда» — бесконечный цикл, «следующий фон» меняет декорацию Сцены.',
+  pairs:[
+    {l:'когда флажок нажат', lc:'events', r:'Запуск программы'},
+    {l:'повторять всегда', lc:'control', r:'Бесконечный цикл'},
+    {l:'следующий фон', lc:'looks', r:'Смена декорации'}
+  ]
+},
+{
+  type:'mc',
+  q:'Что произойдёт, если запустить цикл «повторять всегда» ➜ «следующий фон» БЕЗ блока «ждать»?',
+  hint:'Компьютер очень быстрый. Он успеет сменить фон много-много раз за секунду.',
+  explain:'Без паузы фоны будут мелькать очень быстро — как кадры в ускоренной съёмке. Ничего не разглядеть!',
+  options:[
+    {t:'Фоны будут мелькать очень быстро', ok:true},
+    {t:'Фоны вообще не будут меняться', ok:false},
+    {t:'Программа выдаст ошибку', ok:false},
+    {t:'Фон станет чёрным', ok:false}
+  ]
+},
+{
+  type:'order',
+  q:'Собери правильный скрипт для автоматической смены фонов. Нажимай на блоки по порядку.',
+  hint:'Сначала программа запускается, потом начинается бесконечный цикл, внутри — смена фона и пауза.',
+  explain:'Правильный порядок: 1) когда флажок нажат ➜ 2) повторять всегда ➜ 3) следующий фон ➜ 4) ждать 1 секунду.',
+  items:[
+    {t:'когда флажок нажат', c:'events'},
+    {t:'повторять всегда', c:'control'},
+    {t:'следующий фон', c:'looks'},
+    {t:'ждать 1 секунду', c:'control'}
+  ]
+},
+{
+  type:'mc',
+  q:'Какой блок относится к категории «События» и запускает программу?',
+  hint:'Событие — это то, что «включает» скрипт. Например, зелёный флажок.',
+  explain:'Блок «когда зелёный флажок нажат» — это жёлтый блок категории «События». Он запускает скрипт.',
+  options:[
+    {t:'когда зелёный флажок нажат', blk:'events', ok:true},
+    {t:'повторять всегда', blk:'control', ok:false},
+    {t:'следующий фон', blk:'looks', ok:false},
+    {t:'ждать 1 секунд', blk:'control', ok:false}
+  ]
+},
+
+/* ---------- УРОВЕНЬ: АНАЛИЗ И ЛОГИКА (15–20) ---------- */
+
+{
+  type:'mc',
+  q:'На Сцене добавлено 3 фона: Лес, Пустыня, Море. Сейчас горит «Море». Какой фон включится после блока «следующий фон»?',
+  hint:'Фоны в Scratch переключаются по кругу: после последнего снова идёт первый.',
+  explain:'Фоны идут по кругу. «Море» — последний в списке, значит после него включится первый фон — «Лес».',
+  options:[
+    {t:'Лес', ok:true},
+    {t:'Пустыня', ok:false},
+    {t:'Море', ok:false},
+    {t:'Никакой, фон исчезнет', ok:false}
+  ]
+},
+{
+  type:'mc',
+  q:'Ученик хочет, чтобы фон менялся при нажатии на клавишу «Пробел». Какой блок событий ему нужен?',
+  hint:'В названии блока должна быть клавиша. И это жёлтый блок «Событий».',
+  explain:'Нужен блок «когда клавиша [пробел] нажата» из категории «События». Он запускает скрипт по нажатию клавиши.',
+  options:[
+    {t:'когда клавиша [пробел] нажата', blk:'events', ok:true},
+    {t:'когда флажок нажат', blk:'events', ok:false},
+    {t:'повторять всегда', blk:'control', ok:false},
+    {t:'следующий фон', blk:'looks', ok:false}
+  ]
+},
+{
+  type:'dd',
+  q:'Распредели блоки кода по цветам-категориям Scratch.',
+  hint:'Жёлтые — события (запуск). Оранжевые — управление (циклы и паузы). Фиолетовые — внешний вид (фоны).',
+  explain:'События: «когда флажок нажат», «когда клавиша [пробел] нажата». Управление: «повторять всегда», «ждать 1 секунд». Внешний вид: «следующий фон», «переключить фон на...».',
+  zones:[
+    {name:'События (жёлтые)', color:'#e0a800'},
+    {name:'Управление (оранжевые)', color:'#e08c00'},
+    {name:'Внешний вид (фиолетовые)', color:'#7c4dff'}
+  ],
+  items:[
+    {t:'когда флажок нажат', z:0},
+    {t:'когда клавиша [пробел] нажата', z:0},
+    {t:'повторять всегда', z:1},
+    {t:'ждать 1 секунд', z:1},
+    {t:'следующий фон', z:2},
+    {t:'переключить фон на...', z:2}
+  ]
+},
+{
+  type:'mc',
+  q:'В скрипте написано: «повторить (4) раз» ➜ «следующий фон» ➜ «ждать 1 сек». Сколько всего раз сменится фон?',
+  hint:'Блок «повторить 4 раза» выполняет то, что внутри, ровно 4 раза.',
+  explain:'Цикл «повторить 4 раза» выполнит команду «следующий фон» ровно 4 раза — фон сменится 4 раза.',
+  options:[
+    {t:'Ровно 4 раза', ok:true},
+    {t:'3 раза', ok:false},
+    {t:'5 раз', ok:false},
+    {t:'Бесконечно много раз', ok:false}
+  ]
+},
+{
+  type:'mc',
+  q:'Поиск ошибки: Котёнок говорит фразу, а фон на Сцене не меняется. В чём причина?',
+  hint:'В скрипте вообще есть команда смены фона? И в чьём скрипте она записана?',
+  explain:'Скорее всего, забыли добавить блок «следующий фон» — или записали скрипт смены фона в спрайте, а не в Сцене.',
+  options:[
+    {t:'Забыли добавить блок «следующий фон» (или скрипт написан не в Сцене)', ok:true},
+    {t:'Не хватает блока «показаться»', ok:false},
+    {t:'На Сцене слишком много фонов', ok:false},
+    {t:'Котёнок стоит не в центре Сцены', ok:false}
+  ]
+},
+{
+  type:'mc',
+  q:'Финальная задача: какая комбинация блоков создаёт бесконечное автоматическое путешествие по фонам?',
+  hint:'Нужен запуск + бесконечный цикл + смена фона + небольшая пауза.',
+  explain:'Правильно: «когда флажок нажат» + «повторять всегда» + «следующий фон» + «ждать 1 секунду». Тогда фоны будут плавно меняться по кругу бесконечно.',
+  options:[
+    {t:'Зелёный флажок + повторять всегда + следующий фон + ждать 1 секунду', ok:true},
+    {t:'Зелёный флажок + следующий фон', ok:false},
+    {t:'повторять всегда + ждать 1 секунду', ok:false},
+    {t:'когда клавиша нажата + переключить фон на...', ok:false}
+  ]
+}
+];
+
+
+/* ===== 10 заданий на оценку (по 4 / 4 / 2 из трёх уровней), тексты без изменений ===== */
+QUESTIONS.forEach(function(q,i){q._i=i;});
+(function(){var keep=[0,2,3,6,7,9,10,12,14,19];for(var i=QUESTIONS.length-1;i>=0;i--)if(keep.indexOf(i)<0)QUESTIONS.splice(i,1);})();
+/* ===== ИКОНКИ И КАРТИНКИ (SVG по мотивам Scratch 3) ===== */
+var FLAG='<svg viewBox="0 0 24 24"><path d="M5 22V3" stroke="#3E8E41" stroke-width="2.6" stroke-linecap="round"/><path d="M5 4c4.5-2.5 8 2.5 13 0v10c-5 2.5-8.500-2.500-13 0z" fill="#4CBF56" stroke="#3E8E41" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+var STOP='<svg viewBox="0 0 24 24"><polygon points="8,2 16,2 22,8 22,16 16,22 8,22 2,16 2,8" fill="#EC5959" stroke="#B83E3E" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+var BTN='<circle cx="20" cy="20" r="19" fill="#4C97FF" stroke="#fff" stroke-width="2"/><rect x="9" y="11" width="22" height="18" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M10 28l7-9 5 6 3-3 6 6z" fill="#fff"/><circle cx="26" cy="16" r="2.5" fill="#fff"/>';
+var SC={
+forest:'<rect width="120" height="80" fill="#9bdcff"/><circle cx="100" cy="14" r="8" fill="#ffe14d"/><ellipse cx="30" cy="88" rx="75" ry="34" fill="#4caf50"/><ellipse cx="98" cy="90" rx="60" ry="30" fill="#2e9b45"/><g fill="#7a4a21"><rect x="20" y="42" width="5" height="18"/><rect x="62" y="38" width="5" height="20"/></g><g fill="#1f7a34"><path d="M8 46L22 18L36 46Z"/><path d="M50 42L64 12L78 42Z"/></g>',
+space:'<rect width="120" height="80" fill="#1b1464"/><g fill="#fff"><circle cx="12" cy="10" r="1.5"/><circle cx="40" cy="22" r="1"/><circle cx="70" cy="8" r="1.5"/><circle cx="105" cy="30" r="1"/><circle cx="25" cy="60" r="1"/><circle cx="90" cy="68" r="1.5"/></g><circle cx="85" cy="30" r="14" fill="#ff9a3c"/><ellipse cx="85" cy="30" rx="22" ry="4" fill="none" stroke="#ffe0a0" stroke-width="2"/><circle cx="25" cy="38" r="8" fill="#dcdcf0"/>',
+sea:'<rect width="120" height="80" fill="#1d8fe0"/><rect y="40" width="120" height="40" fill="#0d62b0" opacity=".5"/><ellipse cx="40" cy="30" rx="12" ry="6" fill="#ffb347"/><path d="M52 30l9-6v12z" fill="#ffb347"/><ellipse cx="85" cy="52" rx="10" ry="5" fill="#ff7a8a"/><path d="M95 52l8-5v10z" fill="#ff7a8a"/><g stroke="#3ddc84" stroke-width="3" fill="none"><path d="M15 80q-6-14 0-24t0-14"/><path d="M105 80q6-14 0-24"/></g><g fill="none" stroke="#fff" stroke-width="1"><circle cx="30" cy="55" r="3"/><circle cx="70" cy="18" r="2"/></g>',
+desert:'<rect width="120" height="80" fill="#ffe6a5"/><circle cx="95" cy="16" r="9" fill="#ff9f1c"/><ellipse cx="30" cy="85" rx="70" ry="28" fill="#f2c15a"/><ellipse cx="100" cy="88" rx="55" ry="24" fill="#e6a93c"/><g fill="#3a9a4a"><rect x="50" y="40" width="7" height="24" rx="3"/><rect x="42" y="46" width="5" height="10" rx="2"/><rect x="60" y="44" width="5" height="9" rx="2"/></g>',
+arctic:'<rect width="120" height="80" fill="#cfeeff"/><path d="M0 80V50l25-28 22 30 20-20 30 36 23-12v24z" fill="#fff"/><path d="M0 80V62l30-10 30 14 60-14v28z" fill="#9fd4f2"/>',
+sea2:''};
+SC.sea2=SC.sea;
+var SP={
+cat:'<ellipse cx="50" cy="76" rx="26" ry="20" fill="#FFAB19"/><path d="M74 78q20-4 16-26" stroke="#FFAB19" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M23 34L27 8L45 22ZM77 34L73 8L55 22Z" fill="#FFAB19"/><circle cx="50" cy="42" r="26" fill="#FFAB19"/><circle cx="40" cy="39" r="6" fill="#fff"/><circle cx="60" cy="39" r="6" fill="#fff"/><circle cx="41" cy="40" r="3" fill="#222"/><circle cx="59" cy="40" r="3" fill="#222"/><path d="M45 52q5 5 10 0" stroke="#7a3b00" fill="none" stroke-width="2.5" stroke-linecap="round"/><path d="M22 46h14M22 52l13-3M78 46H64M78 52l-13-3" stroke="#7a3b00" stroke-width="1.5"/>',
+dog:'<ellipse cx="50" cy="76" rx="26" ry="20" fill="#c98a4b"/><ellipse cx="26" cy="38" rx="10" ry="20" fill="#7a4a21"/><ellipse cx="74" cy="38" rx="10" ry="20" fill="#7a4a21"/><circle cx="50" cy="42" r="24" fill="#d9a066"/><circle cx="41" cy="38" r="4" fill="#222"/><circle cx="59" cy="38" r="4" fill="#222"/><ellipse cx="50" cy="52" rx="8" ry="6" fill="#fff"/><circle cx="50" cy="50" r="3.500" fill="#222"/><path d="M50 54v4" stroke="#222" stroke-width="2"/>',
+ball:'<circle cx="50" cy="50" r="34" fill="#fff" stroke="#ddd" stroke-width="2"/><path d="M50 16a34 34 0 0 1 29 17L50 50z" fill="#ec5959"/><path d="M79 67a34 34 0 0 1-29 17V50z" fill="#4c97ff"/><path d="M21 67a34 34 0 0 1 0-34L50 50z" fill="#ffbf00"/>'};
+function nest(inner,x,y,w,h,vb,par){return '<svg x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" viewBox="'+vb+'" preserveAspectRatio="'+(par||'xMidYMid slice')+'">'+inner+'</svg>';}
+function spr(n,x,y,w){return nest(SP[n],x,y,w,w,'0 0 100 100','xMidYMid meet');}
+function stage(bd,sp,more){return '<svg class="stg" viewBox="0 0 240 180">'+nest(SC[bd],0,0,240,180,'0 0 120 80')+(sp||'')+(more||'')+'</svg>';}
+function mini(n){return '<svg class="ic" width="54" height="36" viewBox="0 0 120 80" style="border-radius:6px;border:2px solid #c9d6ee">'+SC[n]+'</svg>';}
+function sp1(n){return '<svg class="ic" width="40" height="40" viewBox="0 0 100 100">'+SP[n]+'</svg>';}
+function ico(v,w){return '<svg class="ic" width="'+(w||36)+'" height="'+(w||36)+'" viewBox="0 0 '+(v.vb||'24 24')+'">'+(v.i||'')+'</svg>';}
+var BTNI='<svg class="ic" width="42" height="42" viewBox="0 0 40 40">'+BTN+'</svg>';
+var BRUSH='<svg class="ic" width="38" height="38" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#4C97FF" stroke="#fff" stroke-width="2"/><path d="M12 29c4 0 6-2 6-5l4-1 7-9-3-3-9 7-1 4c-3 0-4 3-4 7z" fill="#fff"/></svg>';
+var STGI='<svg class="ic" width="42" height="34" viewBox="0 0 42 34"><rect x="2" y="2" width="38" height="28" rx="3" fill="#fff" stroke="#4c97ff" stroke-width="3"/>'+'</svg>';
+function sw(c){return '<svg class="ic" width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" fill="'+c+'" stroke="rgba(0,0,0,.25)" stroke-width="2"/></svg>';}
+var OI={'Кнопка со значком картинки (пейзажа)':BTNI,'Красная кнопка «Стоп»':'<span class="tb">'+STOP+'</span>','Зелёный флажок':'<span class="tb">'+FLAG+'</span>','Кнопка с кисточкой':BRUSH,
+'На Сцене, за персонажами':STGI,'В скрипте Сцены (выбрав Сцену)':STGI,'В скрипте спрайта «Котёнок»':sp1('cat'),'В библиотеке спрайтов':sp1('dog'),
+'Фиолетовый':sw('#9966FF'),'Жёлтый':sw('#FFBF00'),'Оранжевый':sw('#FFAB19'),'Голубой':sw('#4C97FF'),
+'Лес':mini('forest'),'Пустыня':mini('desert'),'Море':mini('sea')};
+var CHI={'Котёнок':sp1('cat'),'Собака':sp1('dog'),'Мяч':sp1('ball'),'Космос':mini('space'),'Лес':mini('forest'),'Подводный мир':mini('sea')};
+function thumbs(l,hi){return '<div class="th">'+l.map(function(b,i){return '<div class="t'+(hi===i?' hi':'')+'"><svg viewBox="0 0 120 80">'+SC[b[0]]+'</svg>'+b[1]+'</div>';}).join('<b>➜</b>')+'</div>';}
+function artFor(i){var a='',c=spr('cat',80,78,90);
+ if(i===0)a='<div class="tb">'+FLAG+STOP+'</div>'+stage('forest',spr('cat',70,70,90),nest(BTN,196,134,38,38,'0 0 40 40','xMidYMid meet'));
+ else if(i===2)a=thumbs([['forest','1'],['space','2'],['sea','3']]);
+ else if(i===3)a='<div class="tiles"><div class="tile on"><svg viewBox="0 0 120 80">'+SC.forest+'</svg>Сцена</div><div class="tile"><svg viewBox="0 0 100 100">'+SP.cat+'</svg>Котёнок</div></div>';
+ else if(i===14)a=thumbs([['forest','Лес'],['desert','Пустыня'],['sea','Море']],2);
+ else if(i===4)a=stage('desert',nest(SP.cat,70,60,100,100,'0 0 100 100','xMidYMid meet').replace('<svg ','<svg transform="rotate(-18 120 110)" '));
+ else if([5,6,10,12,16].indexOf(i)<0)a=stage(['forest','space','sea','desert','arctic'][i%5],c);
+ return a?'<div class="art">'+a+'</div>':'';}
+/* ===== БЛОКИ SCRATCH 3 ===== */
+var CC={events:['#FFBF00','#CC9900'],control:['#FFAB19','#CF8B17'],looks:['#9966FF','#774DCB']};
+function lab(t){return esc(t).replace(/(зелёный )?флажок/i,'<span class="fl">'+FLAG+'</span>').replace(/\[([^\]]+)\]/g,'<i class="in dd">$1 ▾</i>').replace(/(\d+) (секунд)/,'<i class="in">$1</i> $2');}
+function kind(t){return /^когда/.test(t)?'hat':(/повторять всегда/.test(t)?'c':'st');}
+function bhtml(n){var c=CC[n.cat]||CC.looks,x='style="--c:'+c[0]+';--d:'+c[1]+'" data-id="'+n.id+'"';
+ if(n.k==='c')return '<div class="b c" '+x+'><div class="bb ct">'+lab(n.t)+'</div><div class="cm">'+(n.inner||[]).map(bhtml).join('')+'</div><div class="bb cb"></div></div>';
+ return '<div class="b'+(n.k==='hat'?' hat':'')+'" '+x+'><div class="bb">'+lab(n.t)+'</div></div>';}
+function bsingle(t,cat){return bhtml({id:-1,t:t,cat:cat,k:kind(t),inner:[]});}
+function pillCat(t){return /флажок|клавиша/.test(t)?'events':(/повторять|ждать/.test(t)?'control':'looks');}
+function plainOpt(t){
+ if(t.indexOf(' + ')>0)return t.split(' + ').map(function(p){var c=CC[pillCat(p)];return '<span class="pill" style="background:'+c[0]+'">'+(/флажок/i.test(p)?FLAG+' ':'')+esc(p)+'</span>';}).join('<span class="plus">+</span>');
+ return (OI[t]||'')+'<span>'+esc(t)+'</span>';}
+function chipHTML(t){return (CHI[t]||'')+'<span>'+lab(t)+'</span>';}
+function isDone(q){var c=state.cur;if(!c)return false;
+ if(q.type==='mc'||q.type==='tf')return c.selected!==null;
+ if(q.type==='dd')return c.items.every(function(i){return i.curZone!==null;});
+ if(q.type==='match')return Object.keys(c.links).length===q.pairs.length;
+ return c.E.pal.length===0;}
+
+/* =========================================================
+   СОСТОЯНИЕ
+   ========================================================= */
+const state = {
+  name: '',
+  idx: 0,
+  answers: [],
+  cur: null,
+  locked: false
+};
+
+/* =========================================================
+   ЭЛЕМЕНТЫ
+   ========================================================= */
+const nameInput   = document.getElementById('nameInput');
+const startBtn    = document.getElementById('startBtn');
+const startWarn   = document.getElementById('startWarn');
+const questionArea= document.getElementById('questionArea');
+const feedbackEl  = document.getElementById('feedback');
+const checkBtn    = document.getElementById('checkBtn');
+const nextBtn     = document.getElementById('nextBtn');
+const barFill     = document.getElementById('barFill');
+
+/* =========================================================
+   ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ
+   ========================================================= */
+function show(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* =========================================================
+   ЭКРАН 1: СТАРТ
+   ========================================================= */
+nameInput.addEventListener('input', function(){
+  var v = nameInput.value.trim();
+  var ok = v.length >= 2;
+  startBtn.disabled = !ok;
+  startWarn.style.visibility = ok ? 'hidden' : 'visible';
+});
+nameInput.addEventListener('keydown', function(e){
+  if (e.key === 'Enter' && !startBtn.disabled) startBtn.click();
+});
+startBtn.addEventListener('click', function(){
+  state.name = nameInput.value.trim();
+  state.tries = 1; state.log = [];
+  state.idx = 0;
+  state.answers = [];
+  state.locked = false;
+  document.getElementById('studentName').textContent = state.name;
+  document.getElementById('qTotal').textContent = QUESTIONS.length;
+  show('screen-quiz');
+  renderQuestion();
+});
+
+/* =========================================================
+   РЕНДЕР ВОПРОСА
+   ========================================================= */
+function renderQuestion(){
+  var q = QUESTIONS[state.idx];
+  state.locked = false;
+
+  document.getElementById('qNum').textContent = state.idx + 1;
+  barFill.style.width = ((state.idx + 1) / QUESTIONS.length * 100) + '%';
+
+  feedbackEl.className = 'feedback hidden';
+  feedbackEl.innerHTML = '';
+  checkBtn.classList.add('hidden');
+  nextBtn.classList.remove('hidden');
+  nextBtn.textContent = 'Далее →';
+
+  if (q.type === 'mc')        questionArea.innerHTML = renderMC(q);
+  else if (q.type === 'tf')   questionArea.innerHTML = renderTF(q);
+  else if (q.type === 'dd')   questionArea.innerHTML = renderDD(q);
+  else if (q.type === 'match')questionArea.innerHTML = renderMatch(q);
+  else if (q.type === 'order')questionArea.innerHTML = renderOrder(q);
+
+  if (q.type === 'dd')    paintDD(q);
+  if (q.type === 'match') paintMatch(q);
+  if (q.type === 'order') paintOrder(q);
+  var qt = questionArea.querySelector('.q-text');
+  if (qt) qt.insertAdjacentHTML('beforebegin', artFor(QUESTIONS[state.idx]._i));
+  if (q.type === 'dd' && qt) qt.insertAdjacentHTML('afterend','<div class="note">👆 Нажми на карточку, потом на нужную колонку (или перетащи). Вернуть — нажать на карточку в колонке.</div>');
+}
+
+function optInner(o){
+  if (o.blk) return bsingle(o.t,o.blk);
+  return plainOpt(o.t);
+}
+
+function renderMC(q){
+  var opts = shuffle(q.options.map(function(o, i){
+    return { t:o.t, ok:o.ok, blk:o.blk, idx:i };
+  }));
+  state.cur = { type:'mc', options:opts, selected:null };
+  var h = '<div class="q-text">' + esc(q.q) + '</div><div class="opts">';
+  opts.forEach(function(o, i){
+    h += '<button class="opt" data-i="' + i + '">' + optInner(o) + '</button>';
+  });
+  h += '</div>';
+  return h;
+}
+
+function renderTF(q){
+  var opts = [
+    { t:'Верно ✓', ok: !!q.correct },
+    { t:'Неверно ✗', ok: !q.correct }
+  ];
+  state.cur = { type:'tf', options:opts, selected:null };
+  var h = '<div class="q-text">' + esc(q.q) + '</div><div class="opts tf">';
+  opts.forEach(function(o, i){
+    h += '<button class="opt" data-i="' + i + '">' + esc(o.t) + '</button>';
+  });
+  h += '</div>';
+  return h;
+}
+
+function renderDD(q){
+  var items = shuffle(q.items.map(function(it, i){
+    return { t:it.t, z:it.z, id:i, curZone:null };
+  }));
+  state.cur = { type:'dd', items:items, sel:null };
+  return '<div class="q-text">' + esc(q.q) + '</div>' +
+         '<div class="pool" id="ddPool"></div>' +
+         '<div class="zones" id="ddZones"></div>';
+}
+
+function chipEl(it){
+  var d = document.createElement('div');
+  d.className = 'chip';
+  d.dataset.id = it.id;
+  d.draggable = true;
+  d.innerHTML = chipHTML(it.t);
+  if (state.cur && state.cur.sel === it.id) d.classList.add('sel');
+  return d;
+}
+
+function paintDD(q){
+  var cur = state.cur;
+  var pool = document.getElementById('ddPool');
+  var zonesEl = document.getElementById('ddZones');
+  if (!pool || !zonesEl) return;
+
+  pool.innerHTML = '';
+  cur.items.filter(function(it){ return it.curZone === null; })
+           .forEach(function(it){ pool.appendChild(chipEl(it)); });
+
+  zonesEl.innerHTML = q.zones.map(function(z, zi){
+    return '<div class="zone" data-z="' + zi + '" style="--zc:' + z.color + '">' +
+             '<div class="zone-title">' + esc(z.name) + '</div>' +
+             '<div class="zone-body" data-z="' + zi + '"></div>' +
+           '</div>';
+  }).join('');
+
+  cur.items.filter(function(it){ return it.curZone !== null; })
+           .forEach(function(it){
+             var body = zonesEl.querySelector('.zone-body[data-z="' + it.curZone + '"]');
+             if (body) body.appendChild(chipEl(it));
+           });
+}
+
+function renderMatch(q){
+  var left = q.pairs.map(function(p, i){ return { i:i, t:p.l, c:p.lc }; });
+  var right = shuffle(q.pairs.map(function(p, i){ return { i:i, t:p.r }; }));
+  state.cur = { type:'match', left:left, right:right, links:{}, sel:null };
+  return '<div class="q-text">' + esc(q.q) + '</div>' +
+         '<div class="match">' +
+           '<div class="mcol" id="mLeft"></div>' +
+           '<div class="mcol" id="mRight"></div>' +
+         '</div>';
+}
+
+function paintMatch(q){
+  var cur = state.cur;
+  var L = document.getElementById('mLeft');
+  var R = document.getElementById('mRight');
+  if (!L || !R) return;
+  L.innerHTML = '';
+  R.innerHTML = '';
+
+  cur.left.forEach(function(item){
+    var d = document.createElement('div');
+    d.className = 'mitem' +
+      (cur.sel === item.i ? ' sel' : '') +
+      (cur.links[item.i] !== undefined ? ' linked' : '');
+    d.dataset.side = 'left';
+    d.dataset.i = item.i;
+    d.innerHTML = bsingle(item.t, item.c || 'looks');
+    L.appendChild(d);
+  });
+
+  cur.right.forEach(function(item){
+    var d = document.createElement('div');
+    d.className = 'mitem';
+    d.dataset.side = 'right';
+    d.dataset.i = item.i;
+    var leftKey = Object.keys(cur.links).filter(function(k){
+      return cur.links[k] === item.i;
+    })[0];
+    var badge = (leftKey !== undefined)
+      ? '<span class="badge">' + (parseInt(leftKey, 10) + 1) + '</span>'
+      : '<span class="badge empty">?</span>';
+    d.innerHTML = badge + '<span class="plain">' + esc(item.t) + '</span>';
+    R.appendChild(d);
+  });
+}
+
+
+/* ===== СБОРКА СКРИПТА КАК В SCRATCH 3 ===== */
+var NODE={},E=null;
+function renderOrder(q){
+ var items=shuffle(q.items.map(function(it,i){var n={id:i,t:it.t,cat:it.c,k:kind(it.t),inner:[]};if(n.k==='c')n.cap=true;NODE[i]=n;return n;}));
+ E={pal:items,scr:[]};state.cur={type:'order',items:items,E:E};
+ var cats=[['events','События'],['control','Управление'],['looks','Внешний вид']].map(function(c){return '<div><i style="background:'+CC[c[0]][0]+'"></i>'+c[1]+'</div>';}).join('');
+ return '<div class="q-text">'+esc(q.q)+'</div><div class="note">🖱️ Перетаскивай блоки мышкой в область скриптов — они сами прицепляются друг к другу, как в Scratch 3. Блок можно вернуть обратно в палитру.</div>'+
+ '<div class="ed"><div class="cats">'+cats+'</div><div class="pal" id="oPal"></div><div class="ws" id="oWs"><div class="wsbar">'+FLAG+STOP+'</div><div class="script-empty">Перетащи сюда блоки и собери скрипт</div></div></div>';}
+function paintOrder(){var pal=document.getElementById('oPal'),ws=document.getElementById('oWs');if(!pal||!E)return;
+ pal.innerHTML=E.pal.length?E.pal.map(function(n){return '<div class="pi">'+bhtml(n)+'</div>';}).join(''):'<div class="pe">Все блоки в скрипте ✔</div>';
+ ws.querySelectorAll('.scr').forEach(function(x){x.remove();});
+ E.scr.forEach(function(s){var d=document.createElement('div');d.className='scr';d.style.left=s.x+'px';d.style.top=s.y+'px';d.innerHTML=s.ch.map(bhtml).join('');ws.appendChild(d);});
+ ws.classList.toggle('has',E.scr.length>0);}
+function wk(l,id,s){for(var i=0;i<l.length;i++){if(l[i].id===id)return{list:l,i:i,s:s};var r=wk(l[i].inner||[],id,s);if(r)return r;}return null;}
+function findList(id){for(var k=0;k<E.scr.length;k++){var r=wk(E.scr[k].ch,id,E.scr[k]);if(r)return r;}return null;}
+function flat(ch){var o=[];ch.forEach(function(n){var i=n.inner||[];if(n.k==='c')n.inner=[];o.push(n);o=o.concat(flat(i));});return o;}
+function dfs(ch){var o=[];ch.forEach(function(n){o.push(n);o=o.concat(dfs(n.inner||[]));});return o;}
+function place(list,at,chain){var tail=list.splice(at),last=chain[chain.length-1];Array.prototype.push.apply(list,chain);
+ if(tail.length){if(last.k==='c'&&!last.inner.length)last.inner=tail;else if(!last.cap)Array.prototype.push.apply(list,tail);else E.scr.push({x:20,y:230,ch:tail});}}
+function okTail(chain,has){var l=chain[chain.length-1];return !has||!l.cap||(l.k==='c'&&!l.inner.length);}
+function cands(dr,chain){var best=null,bd=56,head=chain[0];
+ document.getElementById('oWs').querySelectorAll('.b').forEach(function(el){var n=NODE[el.dataset.id],r=el.getBoundingClientRect(),f=findList(n.id);if(!f)return;
+  function t(type,px,py,qx,qy){var d=Math.hypot(px-qx,py-qy);if(d<bd){bd=d;best={type:type,n:n,x:qx,y:qy};}}
+  if(head.k!=='hat'&&!n.cap&&okTail(chain,f.i<f.list.length-1))t('after',dr.left,dr.top,r.left,r.bottom-6);
+  if(n.k==='c'&&head.k!=='hat'&&okTail(chain,n.inner.length>0)){var cr=el.querySelector('.ct').getBoundingClientRect();t('inner',dr.left,dr.top,cr.left+18,cr.bottom-6);}
+  if(f.i===0&&f.list===f.s.ch&&n.k!=='hat'){if(okTail(chain,true))t('top',dr.left,dr.bottom-6,r.left,r.top);
+   if(chain.length===1&&head.k==='c'&&!head.inner.length)t('wrap',dr.left,dr.top,r.left-18,r.top-44);}
+ });return best;}
+function inPal(ev,p){return ev.clientX>=p.left&&ev.clientX<=p.right&&ev.clientY>=p.top&&ev.clientY<=p.bottom;}
+function clickAdd(id){var i=E.pal.findIndex(function(n){return n.id===id;});if(i<0)return;var n=E.pal.splice(i,1)[0],s=E.scr[0];
+ if(!s||n.k==='hat')E.scr.push({x:24,y:24,ch:[n]});
+ else{var l=s.ch;for(;;){var L=l[l.length-1];if(L&&L.k==='c'){l=L.inner;if(!l.length){l.push(n);break;}continue;}l.push(n);break;}}
+ paintOrder();}
+document.addEventListener('pointerdown',function(e){
+ var cur=state.cur;if(!cur||cur.type!=='order'||state.locked||!e.target.closest)return;var b=e.target.closest('.ed .b');if(!b)return;
+ e.preventDefault();var id=+b.dataset.id,r=b.getBoundingClientRect(),x0=e.clientX,y0=e.clientY,drag=null,fromPal=!!b.closest('#oPal');
+ function begin(){var chain;
+  if(fromPal)chain=E.pal.splice(E.pal.findIndex(function(n){return n.id===id;}),1);
+  else{var f=findList(id);chain=f.list.splice(f.i);if(!f.s.ch.length)E.scr.splice(E.scr.indexOf(f.s),1);}
+  var d=document.createElement('div');d.className='drag';d.innerHTML=chain.map(bhtml).join('');document.body.appendChild(d);
+  var sn=document.createElement('div');sn.className='snapv';document.body.appendChild(sn);drag={chain:chain,d:d,sn:sn,cand:null};paintOrder();}
+ function mv(ev){if(!drag){if(Math.hypot(ev.clientX-x0,ev.clientY-y0)<6)return;begin();}
+  drag.d.style.left=(ev.clientX-(x0-r.left))+'px';drag.d.style.top=(ev.clientY-(y0-r.top))+'px';
+  var pr=document.getElementById('oPal').getBoundingClientRect(),over=inPal(ev,pr);
+  drag.cand=over?null:cands(drag.d.getBoundingClientRect(),drag.chain);
+  if(drag.cand){drag.sn.style.display='block';drag.sn.style.left=drag.cand.x+'px';drag.sn.style.top=(drag.cand.y-4)+'px';}else drag.sn.style.display='none';
+  document.getElementById('oPal').classList.toggle('over',over);}
+ function up(ev){document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);
+  if(!drag){if(fromPal)clickAdd(id);return;}
+  var dr=drag.d.getBoundingClientRect(),pr=document.getElementById('oPal').getBoundingClientRect(),wr=document.getElementById('oWs').getBoundingClientRect(),c=drag.cand;
+  if(inPal(ev,pr))E.pal=E.pal.concat(flat(drag.chain));
+  else if(c){var f=findList(c.n.id);
+   if(c.type==='after')place(f.list,f.i+1,drag.chain);
+   else if(c.type==='inner')place(c.n.inner,0,drag.chain);
+   else{place(f.list,0,drag.chain);f.s.x=Math.max(4,c.x-wr.left);f.s.y=Math.max(4,(c.type==='top'?c.y-(dr.bottom-dr.top-6):c.y)-wr.top);}}
+  else E.scr.push({x:Math.max(4,Math.min(dr.left-wr.left,wr.width-140)),y:Math.max(4,Math.min(dr.top-wr.top,wr.height-60)),ch:drag.chain});
+  drag.d.remove();drag.sn.remove();document.getElementById('oPal').classList.remove('over');paintOrder();}
+ document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up);});
+
+/* =========================================================
+   ОБРАБОТКА КЛИКОВ (делегирование)
+   ========================================================= */
+questionArea.addEventListener('click', function(e){
+  var cur = state.cur;
+  if (!cur || state.locked) return;
+  var q = QUESTIONS[state.idx];
+
+  /* --- выбор варианта --- */
+  if (cur.type === 'mc' || cur.type === 'tf') {
+    var btn = e.target.closest('.opt');
+    if (!btn) return;
+    cur.selected = parseInt(btn.dataset.i, 10);
+    questionArea.querySelectorAll('.opt').forEach(function(b){
+      b.classList.toggle('sel', b === btn);
+    });
+    return;
+  }
+
+  /* --- drag & drop по категориям --- */
+  if (cur.type === 'dd') {
+    var chip = e.target.closest('.chip');
+    var zoneEl = e.target.closest('.zone');
+
+    if (chip) {
+      var id = parseInt(chip.dataset.id, 10);
+      var it = cur.items.filter(function(x){ return x.id === id; })[0];
+      if (!it) return;
+      if (chip.parentElement.classList.contains('pool')) {
+        cur.sel = (cur.sel === id) ? null : id;
+      } else {
+        it.curZone = null;
+        cur.sel = null;
+      }
+      paintDD(q);
+      return;
+    }
+    if (zoneEl && cur.sel !== null) {
+      var it2 = cur.items.filter(function(x){ return x.id === cur.sel; })[0];
+      if (it2) { it2.curZone = parseInt(zoneEl.dataset.z, 10); cur.sel = null; }
+      paintDD(q);
+    }
+    return;
+  }
+
+  /* --- соответствие --- */
+  if (cur.type === 'match') {
+    var m = e.target.closest('.mitem');
+    if (!m) return;
+    var i = parseInt(m.dataset.i, 10);
+    if (m.dataset.side === 'left') {
+      cur.sel = (cur.sel === i) ? null : i;
+    } else {
+      if (cur.sel === null) return;
+      Object.keys(cur.links).forEach(function(k){
+        if (cur.links[k] === i) delete cur.links[k];
+      });
+      cur.links[cur.sel] = i;
+      cur.sel = null;
+    }
+    paintMatch(q);
+    return;
+  }
+
+  /* --- порядок блоков --- */
+  if (cur.type === 'order') {
+    var el = e.target.closest('[data-bid]');
+    if (!el) return;
+    var bid = parseInt(el.dataset.bid, 10);
+    var pos = cur.placed.indexOf(bid);
+    if (pos >= 0) cur.placed.splice(pos, 1);
+    else cur.placed.push(bid);
+    paintOrder(q);
+  }
+});
+
+/* =========================================================
+   DRAG & DROP (мышью)
+   ========================================================= */
+questionArea.addEventListener('dragstart', function(e){
+  var chip = e.target.closest('.chip');
+  if (!chip || state.locked) return;
+  e.dataTransfer.setData('text/plain', chip.dataset.id);
+  e.dataTransfer.effectAllowed = 'move';
+  chip.classList.add('dragging');
+});
+questionArea.addEventListener('dragend', function(e){
+  var chip = e.target.closest('.chip');
+  if (chip) chip.classList.remove('dragging');
+});
+questionArea.addEventListener('dragover', function(e){
+  if (e.target.closest('.zone') || e.target.closest('#ddPool')) e.preventDefault();
+});
+questionArea.addEventListener('drop', function(e){
+  var cur = state.cur;
+  if (!cur || cur.type !== 'dd' || state.locked) return;
+  var raw = e.dataTransfer.getData('text/plain');
+  if (raw === '' || raw === null) return;
+  var id = parseInt(raw, 10);
+  var it = cur.items.filter(function(x){ return x.id === id; })[0];
+  if (!it) return;
+  e.preventDefault();
+  var zoneEl = e.target.closest('.zone');
+  if (zoneEl) it.curZone = parseInt(zoneEl.dataset.z, 10);
+  else if (e.target.closest('#ddPool')) it.curZone = null;
+  cur.sel = null;
+  paintDD(QUESTIONS[state.idx]);
+});
+
+/* =========================================================
+   ПОДСКАЗКА
+   ========================================================= */
+
+/* =========================================================
+   ПРОВЕРКА ОТВЕТА
+   ========================================================= */
+function checkAnswer(){
+  if (state.locked) return;
+  var q = QUESTIONS[state.idx];
+  var cur = state.cur;
+  var ok = false, userText = '', correctText = '';
+
+  /* --- тест --- */
+  if (q.type === 'mc' || q.type === 'tf') {
+    if (cur.selected === null) {
+      feedbackEl.className = 'feedback bad';
+      feedbackEl.innerHTML = '<div class="fb-title">👉 Выбери один ответ</div>' +
+                             '<div class="fb-text">Нажми на один из вариантов, а потом нажми «Проверить».</div>';
+      return;
+    }
+    var chosen = cur.options[cur.selected];
+    ok = !!chosen.ok;
+    userText = chosen.t;
+    var rightOpt = cur.options.filter(function(o){ return o.ok; })[0];
+    correctText = rightOpt ? rightOpt.t : '';
+
+    questionArea.querySelectorAll('.opt').forEach(function(b){
+      var o = cur.options[parseInt(b.dataset.i, 10)];
+      b.classList.remove('sel');
+      if (o.ok) b.classList.add('correct');
+      else if (parseInt(b.dataset.i, 10) === cur.selected) b.classList.add('wrong');
+      b.disabled = true;
+    });
+  }
+
+  /* --- категории --- */
+  else if (q.type === 'dd') {
+    ok = cur.items.every(function(it){ return it.curZone === it.z; });
+    userText = cur.items.map(function(it){
+      return it.t + ' → ' + (it.curZone === null ? 'не распределено' : q.zones[it.curZone].name);
+    }).join('; ');
+    correctText = cur.items.map(function(it){
+      return it.t + ' → ' + q.zones[it.z].name;
+    }).join('; ');
+
+    questionArea.querySelectorAll('.chip').forEach(function(ch){
+      var it = cur.items.filter(function(x){ return x.id === parseInt(ch.dataset.id, 10); })[0];
+      if (it && it.curZone !== it.z) ch.classList.add('wrong');
+    });
+  }
+
+  /* --- соответствие --- */
+  else if (q.type === 'match') {
+    ok = q.pairs.every(function(p, i){ return cur.links[i] === i; });
+    userText = q.pairs.map(function(p, i){
+      var r = cur.links[i];
+      var rightText = '—';
+      if (r !== undefined) {
+        var found = q.pairs[r];
+        if (found) rightText = found.r;
+      }
+      return p.l + ' → ' + rightText;
+    }).join('; ');
+    correctText = q.pairs.map(function(p){ return p.l + ' → ' + p.r; }).join('; ');
+    cur.sel = null;
+    paintMatch(q);
+  }
+
+  /* --- порядок --- */
+  else if (q.type === 'order') {
+    var seq = cur.E.scr.length === 1 ? dfs(cur.E.scr[0].ch) : [];
+    ok = cur.E.pal.length === 0 && cur.E.scr.length === 1 && seq.length === q.items.length &&
+         seq.every(function(n, i){ return n.id === i; });
+    userText = cur.E.scr.length
+      ? cur.E.scr.map(function(sc){ return dfs(sc.ch).map(function(n){ return n.t; }).join(' → '); }).join(' | ')
+      : 'ничего не выбрано';
+    correctText = q.items.map(function(it){ return it.t; }).join(' → ');
+  }
+
+  /* --- фиксация (результат покажем только в конце) --- */
+  state.locked = true;
+  state.answers.push({ n: state.idx + 1, q: q.q, ok: ok, userText: userText, correctText: correctText, explain: q.explain });
+}
+
+checkBtn.addEventListener('click', checkAnswer);
+
+nextBtn.addEventListener('click', function(){
+  if (state.locked) return;
+  var q = QUESTIONS[state.idx];
+  if (!isDone(q)) {
+    feedbackEl.className = 'feedback bad';
+    feedbackEl.innerHTML = '<div class="fb-title">👉 Сначала выполни задание</div><div class="fb-text">Выбери ответ или выполни задание до конца, потом нажми «Далее».</div>';
+    return;
+  }
+  checkAnswer();
+  if (state.idx < QUESTIONS.length - 1) { state.idx++; renderQuestion(); window.scrollTo(0, 0); }
+  else finish();
+});
+
+/* =========================================================
+   ЭКРАН 3: ИТОГИ
+   ========================================================= */
+function finish(){
+  show('screen-finish');
+
+  var total = QUESTIONS.length;
+  var correct = state.answers.filter(function(a){ return a.ok; }).length;
+  var wrong = total - correct;
+  state.log = state.log || []; state.log.push(correct + ' из ' + total);
+  document.getElementById('statTry').textContent = state.tries || 1;
+  document.getElementById('tryLog').textContent = 'Попытка №' + (state.tries || 1) +
+    (state.log.length > 1 ? '. Твои результаты: ' + state.log.map(function(r, i){ return (i + 1) + ') ' + r; }).join(' · ') : '');
+
+  document.getElementById('finishTitle').textContent = 'Отличная работа, ' + state.name + '!';
+  document.getElementById('finishSub').textContent =
+    (wrong === 0)
+      ? 'Ты выполнил все задания без ошибок! 🎉'
+      : 'Ты прошёл тренажер. Давай разберём, что стоит повторить.';
+
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statWrong').textContent = wrong;
+  document.getElementById('statScore').textContent = correct + ' из ' + total;
+
+  var box = document.getElementById('mistakesBox');
+  var wrongList = state.answers.filter(function(a){ return !a.ok; });
+
+  if (wrongList.length === 0) {
+    box.innerHTML = '<div class="all-good">🌟 Ошибок нет! Ты отлично разобрался с фонами и циклами в Scratch.</div>';
+  } else {
+    var html = '<h3>Разбор ошибок</h3>';
+    wrongList.forEach(function(w){
+      html +=
+        '<div class="mistake">' +
+          '<div class="m-num">Задание ' + w.n + '</div>' +
+          '<div class="m-q">' + esc(w.q) + '</div>' +
+          '<div class="m-row"><span class="lbl bad">Твой ответ: </span>' + esc(w.userText || '—') + '</div>' +
+          '<div class="m-row"><span class="lbl good">Правильно: </span>' + esc(w.correctText) + '</div>' +
+          '<div class="m-row m-exp">💡 ' + esc(w.explain) + '</div>' +
+        '</div>';
+    });
+    box.innerHTML = html;
+  }
+  window.scrollTo(0, 0);
+}
+
+/* =========================================================
+   ПРОЙТИ СНОВА
+   ========================================================= */
+document.getElementById('restartBtn').addEventListener('click', function(){
+  state.tries = (state.tries || 1) + 1;
+  state.idx = 0; state.answers = []; state.cur = null; state.locked = false;
+  barFill.style.width = '0%';
+  show('screen-quiz');
+  renderQuestion();
+});
+
+/* =========================================================
+   ИНИЦИАЛИЗАЦИЯ
+   ========================================================= */
+document.getElementById('qTotal').textContent = QUESTIONS.length;
+(function(){
+  var h={id:0,t:'когда флажок нажат',cat:'events',k:'hat',inner:[]},
+      c={id:1,t:'повторять всегда',cat:'control',k:'c',inner:[{id:2,t:'следующий фон',cat:'looks',k:'st',inner:[]},{id:3,t:'ждать 1 секунду',cat:'control',k:'st',inner:[]}]};
+  document.querySelector('.logo-row').innerHTML='<svg class="cat" viewBox="0 0 100 100">'+SP.cat+'</svg><div class="logo-scr">'+bhtml(h)+bhtml(c)+'</div>';
+  document.getElementById('finishTitle').insertAdjacentHTML('beforebegin','<div style="text-align:center"><svg width="120" height="120" viewBox="0 0 100 100">'+SP.cat+'</svg></div>');
+})();
+</script>
+</body>
+</html>
